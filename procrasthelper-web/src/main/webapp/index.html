@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <script src="static/js/angular/angular.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <style type="text/css">
+        .bs-example {
+            margin: 20px;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Procrastination Helper</title>
+</head>
+<body>
+<div class="container" ng-app="procrastHelperApp">
+    <ul class="nav nav-tabs">
+
+        <li class="dropdown">
+            <a data-toggle="dropdown" class="dropdown-toggle" href="#">Tasks<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a data-toggle="tab" href="#tasklist">Task list</a></li>
+            </ul>
+        </li>
+
+        <li class="dropdown">
+            <a data-toggle="dropdown" class="dropdown-toggle" href="#">Rewards<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a data-toggle="tab" href="#rewardlist">Reward list</a></li>
+                <li><a data-toggle="tab" href="#pending_rewards">Pending rewards</a></li>
+            </ul>
+        </li>
+
+    </ul>
+
+    <div class="tab-content">
+
+        <div id="tasklist" class="tab-pane fade" ng-controller="phCtrl">
+            <h2>Task list</h2>
+
+            <ul>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th><th>Difficulty</th><th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="task in taskList">
+                            <td>{{ task.name }}</td><td>{{ task.difficulty }}</td><td><button ng-click="taskComplete(task.id)">Complete</button> <button ng-click="taskDelete(task.id)">Delete</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <button ng-click="taskListRefresh()">Refresh</button>
+                </p>
+
+                <br/>
+                <div>
+                    New task:
+                    <form>
+                        <p>name: <input type="text" ng-model="newTaskName"/></p>
+                        <p>difficulty: <select ng-model="newTaskDifficulty">
+                            <option value="1"/>1
+                            <option value="2"/>2
+                            <option value="3"/>3
+                            <option value="4"/>4
+                            <option value="5"/>5
+                        </select></p>
+                        <button ng-click="newTaskSave()">Save</button>
+                    </form>
+                    <div ng-if="newTaskMessage">{{ newTaskMessage }}</div>
+                </div>
+            </ul>
+
+        </div>
+
+        <div id="rewardlist" class="tab-pane fade" ng-controller="phCtrl">
+            <h2>Reward list</h2>
+
+            <ul>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Applied Difficulty</th>
+                        <th>Minimal allowed repeat interval</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="reward in rewardList">
+                            <td>{{ reward.name }}</td>
+                            <td>{{ reward.appliedDifficulty }}</td>
+                            <td>{{ reward.minRepeatInterval < 60 ? reward.minRepeatInterval : ( reward.minRepeatInterval < 24 * 60 ? reward.minRepeatInterval / 60 : reward.minRepeatInterval / 60 / 24 ) }}
+                                {{ reward.minRepeatInterval < 60 ? 'minutes' : (reward.minRepeatInterval < 24 * 60 ? 'hours' : 'days' ) }}</td>
+                            <td><button ng-click="rewardDelete(reward.id)">Delete</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <button ng-click="rewardListRefresh()">Refresh</button>
+                </p>
+
+                <br/>
+                <div>
+                    New reward:
+                    <form>
+                        <p>name: <input type="text" ng-model="newRewardName"/></p>
+                        <p>difficulty: <select ng-model="newRewardAppliedDifficulty">
+                            <option value="1"/>1
+                            <option value="2"/>2
+                            <option value="3"/>3
+                            <option value="4"/>4
+                            <option value="5"/>5
+                        </select></p>
+                        <p>minimal repeat interval: <input type="text" ng-model="newRewardInterval"/> <select ng-model="newRewardIntervalUnit">
+                            <option value="1"/>minutes
+                            <option value="60"/>hours
+                            <option value="1440"/>days
+                        </select></p>
+                        <button ng-click="newRewardSave()">Save</button>
+                    </form>
+                    <div ng-if="newRewardMessage">{{ newRewardMessage }}</div>
+                </div>
+            </ul>
+
+        </div>
+
+        <div id="pending_rewards" class="tab-pane fade" ng-controller="phCtrl">
+            <h2>Pending rewards</h2>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Name</th><th>&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="pendingReward in pendingRewardList">
+                        <td>{{ pendingReward.reward.name }}</td><td><button ng-click="takePendingReward(pendingReward.id)">Take it</button> <button ng-click="deletePendingReward(pendingReward.id)">Delete</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <button ng-click="pendingRewardListRefresh()">Refresh</button>
+            </p>
+
+            <div ng-if="pendingRewardMessage">{{ pendingRewardMessage }}</div>
+
+        </div>
+
+    </div>
+</div>
+</body>
+<script>
+    var app = angular.module('procrastHelperApp', []);
+</script>
+
+<script src="static/js/angular/phCtrl.js"></script>
+
+</html>

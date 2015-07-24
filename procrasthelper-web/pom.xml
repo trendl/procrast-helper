@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>procrasthelper</artifactId>
+        <groupId>net.trendl</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>procrasthelper-web</artifactId>
+    <packaging>war</packaging>
+    <url>http://maven.apache.org</url>
+
+    <build>
+        <finalName>procrasthelper-web</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <attachClasses>true</attachClasses>
+                    <archive>
+                        <manifestEntries>
+                            <Specification-Version>${project.version}</Specification-Version>
+                            <SCM-Revision>${buildNumber}</SCM-Revision>
+                            <Weblogic-Application-Version>${build.version.name}</Weblogic-Application-Version>
+                        </manifestEntries>
+                    </archive>
+                    <webResources>
+                        <resource>
+                            <filtering>true</filtering>
+                            <directory>${pom.basedir}/src/main/webapp</directory>
+                            <includes>
+                                <include>WEB-INF/web.xml</include>
+                            </includes>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <configuration>
+                    <port>8081</port>
+                    <path>/</path>
+
+                    <!-- if not set a servlet-api clash occurs .. not sure why -->
+                    <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+
+                    <systemProperties>
+                        <!-- speed up the startup by 4 seconds!! Note that this prevents all classes from being scanned for
+                           * Servlet 3.0 pluggability features. These features include web fragments, annotations, SCIs and classes that match @HandlesTypes
+                           * TLDs -->
+                        <org.apache.catalina.startup.ContextConfig.jarsToSkip>*</org.apache.catalina.startup.ContextConfig.jarsToSkip>
+                        <!-- work around .. see: https://issues.apache.org/jira/browse/MTOMCAT-281 -->
+                        <catalina.config>${project.baseUri}/target/tomcat/logs</catalina.config>
+                        <spring.profiles.active>local</spring.profiles.active>
+                    </systemProperties>
+                    <!--<contextFile>${basedir}/src/main/resources/META-INF/context.xml</contextFile>-->
+                </configuration>
+                <dependencies>
+                    <!-- override default version of tomcat brought directly by tomcat maven plugin -->
+                    <dependency>
+                        <groupId>org.apache.tomcat.embed</groupId>
+                        <artifactId>tomcat-embed-core</artifactId>
+                        <version>${version.tomcat}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>net.trendl</groupId>
+            <artifactId>procrasthelper-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${version.spring}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${version.spring}</version>
+        </dependency>
+        <dependency>
+            <!-- Servlet for JEE -->
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>
