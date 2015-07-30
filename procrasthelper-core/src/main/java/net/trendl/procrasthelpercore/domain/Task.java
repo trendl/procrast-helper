@@ -10,7 +10,7 @@ import java.io.Serializable;
 public class Task implements Serializable {
     private String id;
     private String name;
-    private int difficulty;
+    private double difficulty;
     private boolean completed;
     private DateTime insertDate;
 
@@ -30,11 +30,11 @@ public class Task implements Serializable {
         this.name = name;
     }
 
-    public int getDifficulty() {
+    public double getDifficulty() {
         return difficulty;
     }
 
-    public void setDifficulty(int difficulty) {
+    public void setDifficulty(double difficulty) {
         this.difficulty = difficulty;
     }
 

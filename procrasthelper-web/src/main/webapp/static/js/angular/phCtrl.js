@@ -1,6 +1,6 @@
 app.controller('phCtrl', function phCtrl($scope, $http) {
 
-    $scope.newTaskDifficulty = "1";
+    $scope.newTaskDifficulty = "0.2";
     $scope.newRewardIntervalUnit = "1";
 
     $scope.taskListRefresh = function () {
@@ -65,6 +65,7 @@ app.controller('phCtrl', function phCtrl($scope, $http) {
 
     $scope.pendingRewardListRefresh = function () {
         $http.get("rest/pendingrewards").success( function (response) {
+            $scope.rewardItemList = response;
             $scope.pendingRewardList = response;
         });
     };
@@ -82,5 +83,17 @@ app.controller('phCtrl', function phCtrl($scope, $http) {
             $scope.pendingRewardsMessage = "Reward deleted...";
         });
     };
+
+    $scope.exchangePendingReward = function(id) {
+        console.log($scope.exchangeRewardItem[id]);
+    };
+
+    var init = function () {
+        $scope.taskListRefresh();
+        //$scope.rewardListRefresh();
+        //$scope.pendingRewardListRefresh();
+    };
+
+    init();
 
 });

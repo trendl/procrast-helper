@@ -1,8 +1,7 @@
 package net.trendl.procrasthelpercore.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import net.homecredit.innovations.mongorepository.CommonMongoRepository;
+import net.trendl.procrasthelpercore.domain.AccumulatedCredit;
 import net.trendl.procrasthelpercore.domain.AppliedReward;
 import net.trendl.procrasthelpercore.domain.Reward;
 import org.bson.Document;
@@ -21,6 +20,9 @@ import java.util.UUID;
  */
 public class RewardService {
 
+    // this is only possible because we do not have any user management - this app is for one user
+    private static final String USER_ID = "1";
+
     Random rand = new Random(DateTime.now().getMillis());
 
     @Resource(name = "rewardRepository")
@@ -28,6 +30,9 @@ public class RewardService {
 
     @Resource(name = "appliedRewardRepository")
     CommonMongoRepository appliedRewardRepository;
+
+    @Resource(name="accumulatedCreditRepository")
+    CommonMongoRepository accumulatedCreditRepository;
 
     public Collection<Reward> list() {
         try {
@@ -43,9 +48,13 @@ public class RewardService {
     }
 
     public Reward findOne(String id) {
-        Document rewardObject = (Document) rewardRepository.findOne(id);
-        Reward r = convert(rewardObject);
-        return r;
+        try {
+            Document rewardObject = (Document) rewardRepository.findOne(id);
+            Reward r = convert(rewardObject);
+            return r;
+        } finally {
+            rewardRepository.close();
+        }
     }
 
     private Reward convert(Document rewardDocument) {
@@ -73,80 +82,93 @@ public class RewardService {
     }
 
     public void save(Reward reward) throws Exception {
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(reward);
         try {
-            rewardRepository.save(reward.getId(), json);
+            rewardRepository.save(reward.getId(), reward);
         } finally {
             rewardRepository.close();
         }
     }
 
     public void save(AppliedReward appliedReward) throws Exception {
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(appliedReward);
         try {
-            appliedRewardRepository.save(appliedReward.getId(), json);
+            appliedRewardRepository.save(appliedReward.getId(), appliedReward);
         } finally {
             appliedRewardRepository.close();
         }
     }
 
-    public int applyReward(int difficulty) throws Exception {
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("appliedDifficulty", difficulty);
+    // TODO: refactor this method - too long
+    public int applyReward(double difficulty) throws Exception {
         try {
+            AppliedReward appliedReward = null;
+            AccumulatedCredit accumulatedCredit = new AccumulatedCredit();
+            accumulatedCredit.setId(USER_ID);
+            accumulatedCredit.setValue(difficulty);
+            Map<String, Object> accumulatedCreditMap = (Map<String, Object>) accumulatedCreditRepository.findOne(USER_ID);
+            if (accumulatedCreditMap != null) {
+                // TODO: fix this conversion, it's awful
+                double savedAccumulatedCreditValue = Double.valueOf(String.valueOf(accumulatedCreditMap.get("value")));
+                accumulatedCredit.setValue(savedAccumulatedCreditValue + difficulty);
+            }
+
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("appliedDifficulty", Math.floor(accumulatedCredit.getValue()));
+
             Collection foundRewardDocs = rewardRepository.find(params);
-            ArrayList<Reward> applicableRewards = new ArrayList<Reward>();
-            ArrayList<Reward> rewardsWithinMinimalPeriod = new ArrayList<Reward>();
-            for (Object d : foundRewardDocs) {
-                Reward reward = convert((Document) d);
-                // find last applied reward
-                HashMap<String, Object> appliedRewardParams  = new HashMap<String, Object>();
-                appliedRewardParams.put("reward.id", reward.getId());
-                Collection appliedRewards = appliedRewardRepository.find(appliedRewardParams, "appliedDate.millis", -1);
-                if (appliedRewards.size() > 0) {
-                    AppliedReward lastAppliedReward = convertAppliedReward ((Document)appliedRewards.iterator().next());
-                    if (lastAppliedReward.getAppliedDate() == null ||
-                            lastAppliedReward.getAppliedDate().plus(reward.getMinRepeatInterval() * 60 * 1000).isBeforeNow()) {
-                        applicableRewards.add(reward);;
+            if (foundRewardDocs.size() > 0) {
+                ArrayList<Reward> applicableRewards = new ArrayList<Reward>();
+                ArrayList<Reward> rewardsWithinMinimalPeriod = new ArrayList<Reward>();
+                for (Object d : foundRewardDocs) {
+                    Reward reward = convert((Document) d);
+                    // find last applied reward
+                    HashMap<String, Object> appliedRewardParams = new HashMap<String, Object>();
+                    appliedRewardParams.put("reward.id", reward.getId());
+                    Collection appliedRewards = appliedRewardRepository.find(appliedRewardParams, "appliedDate.millis", -1);
+                    if (appliedRewards.size() > 0) {
+                        AppliedReward lastAppliedReward = convertAppliedReward((Document) appliedRewards.iterator().next());
+                        if (lastAppliedReward.getAppliedDate() == null ||
+                                lastAppliedReward.getAppliedDate().plus(reward.getMinRepeatInterval() * 60 * 1000).isBeforeNow()) {
+                            applicableRewards.add(reward);
+                            ;
+                        } else {
+                            rewardsWithinMinimalPeriod.add(reward);
+                        }
                     } else {
-                        rewardsWithinMinimalPeriod.add(reward);
+                        applicableRewards.add(reward);
                     }
-                } else {
-                    applicableRewards.add(reward);
+                }
+                // select one rewards randomly
+                appliedReward = null;
+                if (applicableRewards.size() > 0) {
+                    int randomIndex = rand.nextInt(applicableRewards.size());
+                    appliedReward = new AppliedReward();
+                    appliedReward.setAppliedDate(DateTime.now());
+                    appliedReward.setPending(true);
+                    appliedReward.setReward(applicableRewards.get(randomIndex));
+
+                } else if (rewardsWithinMinimalPeriod.size() > 0) {
+                    int randomIndex = rand.nextInt(rewardsWithinMinimalPeriod.size());
+                    appliedReward = new AppliedReward();
+                    appliedReward.setAppliedDate(DateTime.now());
+                    appliedReward.setPending(true);
+                    appliedReward.setReward(rewardsWithinMinimalPeriod.get(randomIndex));
+                }
+
+                if (appliedReward != null) {
+                    appliedReward.setId(UUID.randomUUID().toString());
+                    appliedRewardRepository.save(appliedReward.getId(), appliedReward);
+                    accumulatedCredit.setValue(accumulatedCredit.getValue() - appliedReward.getReward().getAppliedDifficulty());
+                    accumulatedCreditRepository.save(USER_ID, accumulatedCredit);
+                    return 1;
                 }
             }
-            // select one rewards randomly
-            AppliedReward appliedReward = null;
-            if (applicableRewards.size() > 0) {
-                int randomIndex = rand.nextInt(applicableRewards.size());
-                appliedReward = new AppliedReward();
-                appliedReward.setAppliedDate(DateTime.now());
-                appliedReward.setPending(true);
-                appliedReward.setReward(applicableRewards.get(randomIndex));
 
-            } else if (rewardsWithinMinimalPeriod.size() > 0) {
-                int randomIndex = rand.nextInt(rewardsWithinMinimalPeriod.size());
-                appliedReward = new AppliedReward();
-                appliedReward.setAppliedDate(DateTime.now());
-                appliedReward.setPending(true);
-                appliedReward.setReward(rewardsWithinMinimalPeriod.get(randomIndex));
-            }
-
-            if (appliedReward != null) {
-                appliedReward.setId(UUID.randomUUID().toString());
-                ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-                String json = ow.writeValueAsString(appliedReward);
-
-                appliedRewardRepository.save(appliedReward.getId(), json);
-                return 1;
-            }
-
+            accumulatedCreditRepository.save(USER_ID, accumulatedCredit);
             return 0;
         } finally {
             rewardRepository.close();
             appliedRewardRepository.close();
+            accumulatedCreditRepository.close();
         }
     }
 

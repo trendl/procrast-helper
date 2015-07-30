@@ -1,7 +1,5 @@
 package net.trendl.procrasthelpercore.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import net.homecredit.innovations.mongorepository.CommonMongoRepository;
 import net.trendl.procrasthelpercore.domain.Task;
 import org.bson.Document;
@@ -51,16 +49,15 @@ public class TaskService {
         Task t = new Task();
         t.setId(taskObject.getString("id"));
         t.setCompleted(taskObject.getBoolean("completed"));
-        t.setDifficulty(taskObject.getInteger("difficulty"));
+        // TODO: fix this conversion, it's awful
+        t.setDifficulty(Double.valueOf(String.valueOf(taskObject.get("difficulty"))));
         t.setName(taskObject.getString("name"));
         return t;
     }
 
     public void save(Task task) throws Exception {
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(task);
         try {
-            taskRepository.save(task.getId(), json);
+            taskRepository.save(task.getId(), task);
         } finally {
             taskRepository.close();
         }

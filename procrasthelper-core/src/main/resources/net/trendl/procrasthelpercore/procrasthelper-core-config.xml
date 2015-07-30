@@ -27,4 +27,11 @@
         <constructor-arg name="collectionName" value="appliedReward"/>
     </bean>
 
+    <bean id="accumulatedCreditRepository" class="net.homecredit.innovations.mongorepository.CommonMongoRepository">
+        <constructor-arg name="databaseName" value="ph" />
+        <constructor-arg name="collectionName" value="accumulatedCredit"/>
+    </bean>
+
+
+
 </beans>
