@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <!--<appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+        <!--<File>hci-signin.log</File>-->
+        <!--<encoder>-->
+            <!--<pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%t] %-5level %-40logger{40} - %msg%n</pattern>-->
+        <!--</encoder>-->
+        <!--<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">-->
+            <!--<fileNamePattern>hci-signin.%i.log</fileNamePattern>-->
+            <!--<maxIndex>10</maxIndex>-->
+        <!--</rollingPolicy>-->
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+            <!--<MaxFileSize>10000KB</MaxFileSize>-->
+        <!--</triggeringPolicy>-->
+    <!--</appender>-->
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy.MM.dd HH:mm:ss.SSS} [%t] %-5level %-40logger{40} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root>
+        <level value="DEBUG"/>
+        <!--<appender-ref ref="File"/>-->
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+    <logger name="${project.groupId}" level="DEBUG"/>
+    <logger name="net.homecredit.innovations.social" level="DEBUG" />
+    <logger name="org.springframework.security" level="DEBUG" />
+
+</configuration>

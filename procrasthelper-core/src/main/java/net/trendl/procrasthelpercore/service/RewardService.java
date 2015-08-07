@@ -129,7 +129,6 @@ public class RewardService {
                         if (lastAppliedReward.getAppliedDate() == null ||
                                 lastAppliedReward.getAppliedDate().plus(reward.getMinRepeatInterval() * 60 * 1000).isBeforeNow()) {
                             applicableRewards.add(reward);
-                            ;
                         } else {
                             rewardsWithinMinimalPeriod.add(reward);
                         }
