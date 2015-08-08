@@ -12,6 +12,8 @@
 
     <bean id="rewardService" class="net.trendl.procrasthelpercore.service.RewardService" />
 
+    <bean id="userService" class="net.trendl.procrasthelpercore.service.UserService"/>
+
     <bean id="taskRepository" class="net.homecredit.innovations.mongorepository.CommonMongoRepository">
         <constructor-arg name="databaseName" value="ph" />
         <constructor-arg name="collectionName" value="task"/>
@@ -32,6 +34,9 @@
         <constructor-arg name="collectionName" value="accumulatedCredit"/>
     </bean>
 
-
+    <bean id="userRepository" class="net.homecredit.innovations.mongorepository.CommonMongoRepository">
+        <constructor-arg name="databaseName" value="ph" />
+        <constructor-arg name="collectionName" value="user"/>
+    </bean>
 
 </beans>

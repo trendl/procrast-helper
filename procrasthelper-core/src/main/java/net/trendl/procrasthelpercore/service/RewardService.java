@@ -20,9 +20,6 @@ import java.util.UUID;
  */
 public class RewardService {
 
-    // this is only possible because we do not have any user management - this app is for one user
-    private static final String USER_ID = "1";
-
     Random rand = new Random(DateTime.now().getMillis());
 
     @Resource(name = "rewardRepository")
@@ -34,9 +31,11 @@ public class RewardService {
     @Resource(name="accumulatedCreditRepository")
     CommonMongoRepository accumulatedCreditRepository;
 
-    public Collection<Reward> list() {
+    public Collection<Reward> list(String userId) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("userId", userId);
         try {
-            Collection rewardDocuments = rewardRepository.find(null);
+            Collection rewardDocuments = rewardRepository.find(params);
             Collection<Reward> rewardResult = new ArrayList<Reward>();
             for (Object d : rewardDocuments) {
                 rewardResult.add(convert((Document) d));
@@ -98,13 +97,13 @@ public class RewardService {
     }
 
     // TODO: refactor this method - too long
-    public int applyReward(double difficulty) throws Exception {
+    public int applyReward(String userId, double difficulty) throws Exception {
         try {
             AppliedReward appliedReward = null;
             AccumulatedCredit accumulatedCredit = new AccumulatedCredit();
-            accumulatedCredit.setId(USER_ID);
+            accumulatedCredit.setId(userId);
             accumulatedCredit.setValue(difficulty);
-            Map<String, Object> accumulatedCreditMap = (Map<String, Object>) accumulatedCreditRepository.findOne(USER_ID);
+            Map<String, Object> accumulatedCreditMap = (Map<String, Object>) accumulatedCreditRepository.findOne(userId);
             if (accumulatedCreditMap != null) {
                 // TODO: fix this conversion, it's awful
                 double savedAccumulatedCreditValue = Double.valueOf(String.valueOf(accumulatedCreditMap.get("value")));
@@ -112,6 +111,7 @@ public class RewardService {
             }
 
             Map<String, Object> params = new HashMap<String, Object>();
+            params.put("userId", userId);
             params.put("appliedDifficulty", Math.floor(accumulatedCredit.getValue()));
 
             Collection foundRewardDocs = rewardRepository.find(params);
@@ -122,6 +122,7 @@ public class RewardService {
                     Reward reward = convert((Document) d);
                     // find last applied reward
                     HashMap<String, Object> appliedRewardParams = new HashMap<String, Object>();
+                    appliedRewardParams.put("userId", userId);
                     appliedRewardParams.put("reward.id", reward.getId());
                     Collection appliedRewards = appliedRewardRepository.find(appliedRewardParams, "appliedDate.millis", -1);
                     if (appliedRewards.size() > 0) {
@@ -155,14 +156,15 @@ public class RewardService {
 
                 if (appliedReward != null) {
                     appliedReward.setId(UUID.randomUUID().toString());
+                    appliedReward.setUserId(userId);
                     appliedRewardRepository.save(appliedReward.getId(), appliedReward);
                     accumulatedCredit.setValue(accumulatedCredit.getValue() - appliedReward.getReward().getAppliedDifficulty());
-                    accumulatedCreditRepository.save(USER_ID, accumulatedCredit);
+                    accumulatedCreditRepository.save(userId, accumulatedCredit);
                     return 1;
                 }
             }
 
-            accumulatedCreditRepository.save(USER_ID, accumulatedCredit);
+            accumulatedCreditRepository.save(userId, accumulatedCredit);
             return 0;
         } finally {
             rewardRepository.close();
@@ -179,8 +181,9 @@ public class RewardService {
         }
     }
 
-    public Collection<AppliedReward> listPendingRewards() {
+    public Collection<AppliedReward> listPendingRewards(String userId) {
         Map<String, Object > params = new HashMap<String, Object>();
+        params.put("userId", userId);
         params.put("pending", true);
         try {
             Collection pendingRewardDocs = appliedRewardRepository.find(params);

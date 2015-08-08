@@ -7,6 +7,8 @@ import net.trendl.procrasthelpercore.service.RewardService;
 import net.trendl.procrasthelpercore.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,12 +33,13 @@ public class TaskController extends BaseController {
 
     @RequestMapping(value= "/tasks", method = RequestMethod.GET)
     public ResponseEntity listTasks() {
-        return new ResponseEntity(taskService.list(false), HttpStatus.OK);
+        return new ResponseEntity(taskService.list(getCurrentUserName(), false), HttpStatus.OK);
     }
 
     @RequestMapping(value="/task", method = RequestMethod.POST)
     public void insertTask(@RequestBody Task task) throws Exception {
         task.setId(UUID.randomUUID().toString());
+        task.setUserId(getCurrentUserName());
         taskService.save(task);
     }
 
@@ -45,7 +48,7 @@ public class TaskController extends BaseController {
         Task task = taskService.findOne(taskId);
         task.setCompleted(true);
         taskService.save(task);
-        int newRewardCount = rewardService.applyReward(task.getDifficulty());
+        int newRewardCount = rewardService.applyReward(getCurrentUserName(), task.getDifficulty());
         return new ResponseEntity(newRewardCount, HttpStatus.OK);
     }
 
@@ -56,12 +59,13 @@ public class TaskController extends BaseController {
 
     @RequestMapping(value= "/rewards", method = RequestMethod.GET)
     public ResponseEntity listRewards() {
-        return new ResponseEntity(rewardService.list(), HttpStatus.OK);
+        return new ResponseEntity(rewardService.list(getCurrentUserName()), HttpStatus.OK);
     }
 
     @RequestMapping(value="/reward", method = RequestMethod.POST)
     public void insertReward(@RequestBody Reward reward) throws Exception {
         reward.setId(UUID.randomUUID().toString());
+        reward.setUserId(getCurrentUserName());
         rewardService.save(reward);
     }
 
@@ -72,7 +76,7 @@ public class TaskController extends BaseController {
 
     @RequestMapping(value= "/pendingrewards", method = RequestMethod.GET)
     public ResponseEntity listPendingRewards() {
-        return new ResponseEntity(rewardService.listPendingRewards(), HttpStatus.OK);
+        return new ResponseEntity(rewardService.listPendingRewards(getCurrentUserName()), HttpStatus.OK);
     }
 
     @RequestMapping(value="/pendingreward/{rewardId}/take", method = RequestMethod.POST)
@@ -85,5 +89,11 @@ public class TaskController extends BaseController {
     @RequestMapping(value="/pendingreward/{rewardId}/delete", method = RequestMethod.POST)
     public void deletePendingReward(@PathVariable String rewardId) throws Exception {
         rewardService.deletePendingReward(rewardId);
+    }
+
+    private String getCurrentUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+        return currentPrincipalName;
     }
 }

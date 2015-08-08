@@ -69,7 +69,7 @@
             <!--</security:attribute-exchange>-->
         <!--</security:openid-login>-->
         <!--<security:custom-filter ref="socialAuthenticationFilter" before="PRE_AUTH_FILTER" />-->
-        <security:custom-filter before="PRE_AUTH_FILTER" ref="socialAuthFilter"/>
+
                                 
     </security:http>
 
@@ -82,98 +82,11 @@
         </security:authentication-provider>
         <!--<security:authentication-provider user-service-ref="userDetailsService"/>-->
         <!--<security:authentication-provider ref="socialAuthenticationProvider"/>-->
-        <security:authentication-provider ref="socialAuthProvider"/>
+
     </security:authentication-manager>
 
-    <bean id="connectionFactoryLocator"
-          class="org.springframework.social.security.SocialAuthenticationServiceRegistry">
-        <property name="connectionFactories">
-            <list>
-                <!--<bean class="org.springframework.social.facebook.connect.FacebookConnectionFactory">-->
-                    <!--<constructor-arg value="add social.facebook.appId" />-->
-                    <!--<constructor-arg value="add social.facebook.appSecret" />-->
-                <!--</bean>-->
-                <bean class="org.springframework.social.google.connect.GoogleConnectionFactory">
-                    <constructor-arg name="clientId" value="863921666066-u5u5itr52t2tb1jprcanvg4i8v6g2naa.apps.googleusercontent.com"/>
-                    <constructor-arg name="clientSecret" value="0FR7gtoGDHCDbm746j93gQPx"/>
-                </bean>
-            </list>
-        </property>
-    </bean>
-    <bean id="socialUsersConxRepo" class="org.springframework.social.connect.mem.InMemoryUsersConnectionRepository">
-        <constructor-arg ref="connectionFactoryLocator"/>
-    </bean>
-    <bean id="socialUserIdSource"
-          class="org.springframework.social.security.AuthenticationNameUserIdSource"/>
-    <bean id="socialAuthFilter" class="org.springframework.social.security.SocialAuthenticationFilter">
-        <constructor-arg ref="authenticationManager"/>
-        <constructor-arg ref="socialUserIdSource"/>
-        <constructor-arg ref="socialUsersConxRepo"/>
-        <constructor-arg ref="connectionFactoryLocator"/>
-    </bean>
-    <bean id="socialAuthProvider" class="org.springframework.social.security.SocialAuthenticationProvider">
-        <constructor-arg name="usersConnectionRepository" ref="socialUsersConxRepo"/>
 
-        <!-- application defined @Service -->
-        <constructor-arg name="userDetailsService" ref="simpleSocialUsersDetailService"/>
-    </bean>
 
-    <bean id="simpleSocialUsersDetailService" class="net.trendl.procrasthelper.web.security.SimpleSocialUserDetailsService" >
-        <constructor-arg name="userDetailsService" ref="userDetailsService"/>
-            </bean>
 
-    <bean id="userDetailsService" class="net.trendl.procrasthelper.web.security.RepositoryUserDetailsService"/>
-
-    <!--&lt;!&ndash; This is used to hash the password of the user. &ndash;&gt;-->
-    <!--<bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">-->
-        <!--<constructor-arg index="0" value="10"/>-->
-    <!--</bean>-->
-
-    <!--&lt;!&ndash;-->
-        <!--Configures the social authentication filter which integrates Spring Social-->
-        <!--with Spring Security.-->
-    <!--&ndash;&gt;-->
-    <!--<bean id="socialAuthenticationFilter" class="org.springframework.social.security.SocialAuthenticationFilter">-->
-        <!--<constructor-arg index="0" ref="authenticationManager"/>-->
-        <!--<constructor-arg index="1" ref="userIdSource"/>-->
-        <!--<constructor-arg index="2" ref="usersConnectionRepository"/>-->
-        <!--<constructor-arg index="3" ref="connectionFactoryLocator"/>-->
-
-        <!--&lt;!&ndash; Sets the url of the registration form. &ndash;&gt;-->
-        <!--<property name="signupUrl" value="/user/register"/>-->
-    <!--</bean>-->
-
-    <!--&lt;!&ndash;-->
-        <!--Configures the social authentication provider which processes authentication requests-->
-        <!--made by using supported social authentication services (FB, Twitter and so on).-->
-    <!--&ndash;&gt;-->
-    <!--<bean id="socialAuthenticationProvider" class="org.springframework.social.security.SocialAuthenticationProvider">-->
-        <!--<constructor-arg index="0" ref="usersConnectionRepository"/>-->
-        <!--<constructor-arg index="1" ref="socialUserDetailsService"/>-->
-    <!--</bean>-->
-
-    <!--&lt;!&ndash;-->
-        <!--This bean is used to load the user specific data when social sign in-->
-        <!--is used.-->
-    <!--&ndash;&gt;-->
-    <!--<bean id="socialUserDetailsService" class="net.trendl.procrasthelper.web.security.SimpleSocialUserDetailsService">-->
-        <!--<constructor-arg index="0" ref="userDetailsService"/>-->
-    <!--</bean>-->
-
-    <!--&lt;!&ndash;-->
-        <!--This bean encrypts the authorization details of the connection. In-->
-        <!--our example, the authorization details are stored as plain text.-->
-        <!--DO NOT USE THIS IN PRODUCTION.-->
-    <!--&ndash;&gt;-->
-    <!--<bean id="textEncryptor" class="org.springframework.security.crypto.encrypt.Encryptors" factory-method="noOpText" />-->
-
-    <!--&lt;!&ndash; This bean is load the user specific data when form login is used. &ndash;&gt;-->
-    <!--<bean id="userDetailsService" class="net.trendl.procrasthelper.web.security.RepositoryUserDetailsService" autowire="constructor"/>-->
-
-    <!--&lt;!&ndash;-->
-        <!--This bean determines the account ID of the user. The example application-->
-        <!--uses the username as the account ID.-->
-    <!--&ndash;&gt;-->
-    <!--<bean id="userIdSource" class="org.springframework.social.security.AuthenticationNameUserIdSource"/>-->
 
 </beans>

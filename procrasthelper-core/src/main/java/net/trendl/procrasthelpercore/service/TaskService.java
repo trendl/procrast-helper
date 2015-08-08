@@ -17,8 +17,9 @@ public class TaskService {
     @Resource(name="taskRepository")
     CommonMongoRepository taskRepository;
 
-    public Collection<Task> list(boolean showCompletedTasks) {
+    public Collection<Task> list(String userId, boolean showCompletedTasks) {
         Map<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("userId", userId);
         if (!showCompletedTasks) {
             parameters.put("completed", false);
         }

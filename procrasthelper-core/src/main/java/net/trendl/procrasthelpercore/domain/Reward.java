@@ -7,6 +7,7 @@ import java.io.Serializable;
  */
 public class Reward implements Serializable {
     private String id;
+    private String userId;
     private String name;
     private int appliedDifficulty;
     private int minRepeatInterval ;
@@ -41,5 +42,13 @@ public class Reward implements Serializable {
 
     public void setAppliedDifficulty(int appliedDifficulty) {
         this.appliedDifficulty = appliedDifficulty;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

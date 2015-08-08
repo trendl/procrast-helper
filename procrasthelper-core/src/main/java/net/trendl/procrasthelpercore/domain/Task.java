@@ -9,6 +9,7 @@ import java.io.Serializable;
  */
 public class Task implements Serializable {
     private String id;
+    private String userId;
     private String name;
     private double difficulty;
     private boolean completed;
@@ -52,5 +53,13 @@ public class Task implements Serializable {
 
     public void setInsertDate(DateTime insertDate) {
         this.insertDate = insertDate;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }
