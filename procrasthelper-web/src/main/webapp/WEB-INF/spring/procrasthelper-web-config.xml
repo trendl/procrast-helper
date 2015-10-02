@@ -28,8 +28,6 @@
             <bean class="org.springframework.web.context.support.StandardServletEnvironment"/>
         </property>
     </bean>
-    
-    <bean id="springSocialConfigurer" class="org.springframework.social.security.SpringSocialConfigurer"/>
 
     <!-- Security -->
     <!--<bean id="openIdUserService" class="net.trendl.procrasthelper.web.security.OpenIdUserDetailsService"/>-->
@@ -37,13 +35,6 @@
 
     <security:http auto-config="true">
         <security:csrf disabled="true"/>
-        <!--<security:csrf disabled="true"/>-->
-        <!--<security:form-login login-page="/login2.html"-->
-                             <!--login-processing-url="/rest/login"-->
-                             <!--default-target-url="/index.html"-->
-                             <!--authentication-failure-url="/login2.html?err=1"-->
-                             <!--username-parameter="username"-->
-                             <!--password-parameter="password" />-->
         <security:form-login login-page="/sign-in.jsp"
                              always-use-default-target="false"
                              authentication-failure-url="/sign-in.jsp?error=1"
@@ -53,40 +44,17 @@
                 <!--default-target-url="/homepage.html"-->
                 <!--authentication-failure-url="/login.html?error=true" />-->
         <!--<security:intercept-url pattern="/login2.html" access="permitAll()" />-->
+        <security:intercept-url pattern="/rest/auth/**" access="permitAll()" />
+        <security:intercept-url pattern="/static/js/**" access="permitAll()" />
+        <!--<security:intercept-url pattern="/**" access="hasRole('ROLE_USER')" />-->
         <security:intercept-url pattern="/index.html" access="hasRole('ROLE_USER')" />
-                                <!--access="hasRole('ROLE_USER')" />-->
-                                <!--access="ROLE_USER" />-->
-
-                                <!--access="permitAll()" />-->
-
-
+        <security:intercept-url pattern="/rest/**" access="hasRole('ROLE_USER')" />
         <security:logout logout-success-url="/" delete-cookies="JSESSIONID" invalidate-session="true" />
-        <!--<security:openid-login user-service-ref="openIdUserService" >-->
-            <!--<security:attribute-exchange >-->
-                <!--<security:openid-attribute name="email" type="http://schema.openid.net/contact/email" required="true" />-->
-                <!--<security:openid-attribute name="firstName" type="http://axschema.org/namePerson/first" required="true" />-->
-                <!--<security:openid-attribute name="lastName" type="http://axschema.org/namePerson/last" required="true" />-->
-            <!--</security:attribute-exchange>-->
-        <!--</security:openid-login>-->
-        <!--<security:custom-filter ref="socialAuthenticationFilter" before="PRE_AUTH_FILTER" />-->
-
-                                
     </security:http>
 
     <security:authentication-manager alias="authenticationManager">
         <security:authentication-provider user-service-ref="loginService">
-            <!--</authentication-provider>-->
-            <!--<security:user-service>-->
-                <!--<security:user name="trendl" password="password" authorities="ROLE_USER" />-->
-            <!--</security:user-service>-->
         </security:authentication-provider>
-        <!--<security:authentication-provider user-service-ref="userDetailsService"/>-->
-        <!--<security:authentication-provider ref="socialAuthenticationProvider"/>-->
-
     </security:authentication-manager>
-
-
-
-
 
 </beans>

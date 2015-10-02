@@ -78,7 +78,7 @@
     xhr.onreadystatechange = function() {
       if (xhr.readyState == 4) {
         console.log('state changed');
-        console.log('response test:' + xhr.responseText);
+        console.log('response text:' + xhr.responseText);
         var userId = JSON.parse(this.responseText).name;
         var userPassword = JSON.parse(this.responseText).password;
         document.f.username.value =userId;

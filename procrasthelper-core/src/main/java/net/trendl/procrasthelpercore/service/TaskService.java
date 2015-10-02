@@ -48,6 +48,7 @@ public class TaskService {
 
     private Task convert(Document taskObject) {
         Task t = new Task();
+        t.setUserId(taskObject.getString("userId"));
         t.setId(taskObject.getString("id"));
         t.setCompleted(taskObject.getBoolean("completed"));
         // TODO: fix this conversion, it's awful

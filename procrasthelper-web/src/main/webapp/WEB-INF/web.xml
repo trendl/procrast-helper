@@ -16,8 +16,8 @@
 
     <context-param>
         <param-name>mongo.host</param-name>
-        <param-value>192.168.119.140</param-value>
-        <!--<param-value>104.155.59.40</param-value>-->
+        <param-value>${mongo.host}</param-value>
+        <!--<param-value>192.168.119.140</param-value>-->
     </context-param>
 
     <context-param>
